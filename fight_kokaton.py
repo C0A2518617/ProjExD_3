@@ -8,7 +8,7 @@ import pygame as pg
 WIDTH = 1100  # ゲームウィンドウの幅
 HEIGHT = 650  # ゲームウィンドウの高さ
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
+NUM_OF_BOMBS = 5  # 爆弾の数
 
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     """
@@ -145,7 +145,7 @@ def main():
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
-    bomb = Bomb((255, 0, 0), 10)
+    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     beam = None  # ゲーム初期化時にはビームは存在しない
     clock = pg.time.Clock()
     tmr = 0
@@ -157,28 +157,31 @@ def main():
                 # スペースキー押下でBeamクラスのインスタンス生成
                 beam = Beam(bird)            
         screen.blit(bg_img, [0, 0])
-        if bomb is not None:
+        for i, bomb in enumerate(bombs): # 爆弾が存在する場合のみ衝突判定
             if beam is not None:
                 if beam.rct.colliderect(bomb.rct):
                     # ビームと爆弾が衝突したら爆弾を消す
-                    bomb = None
+                    bombs[i] = None
                     beam = None
-                    bird.change_img(9, screen)  # こうかとん画像を切り替える
-                    pg.display.update()
-                    time.sleep(1)  # 1秒間表示させ
-                    return
             elif bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
                 bird.change_img(8, screen)
                 pg.display.update()
                 time.sleep(1)
                 return
+        bombs = [bomb for bomb in bombs if bomb is not None]  # Noneを除去
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         if beam is not None: # ビームが存在する場合のみビームを更新
             beam.update(screen)
-        if bomb is not None: # 爆弾が存在する場合のみ爆弾を更新
-            bomb.update(screen)
+        for bomb in bombs: # 爆弾が存在する場合のみ爆弾を更新
+            if bomb is not None:
+                bomb.update(screen)
+        if len(bombs) == 0:
+            bird.change_img(9, screen)  # こうかとん画像を切り替える
+            pg.display.update()
+            time.sleep(1)  # 1秒間表示させ
+            return
         pg.display.update()
         tmr += 1
         clock.tick(50)

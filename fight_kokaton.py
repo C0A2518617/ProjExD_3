@@ -159,7 +159,7 @@ def main():
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
-    beam = None  # ゲーム初期化時にはビームは存在しない
+    beams = [] # ビームのリストを初期化
     score = Score((0, 0, 255), 0,None)
     clock = pg.time.Clock()
     tmr = 0
@@ -169,29 +169,30 @@ def main():
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # スペースキー押下でBeamクラスのインスタンス生成
-                beam = Beam(bird)            
+                beam = Beam(bird)
+                beams.append(beam)
         screen.blit(bg_img, [0, 0])
         for i, bomb in enumerate(bombs): # 爆弾が存在する場合のみ衝突判定
-            if beam is not None:
+            for beam in beams:
                 if beam.rct.colliderect(bomb.rct):
                     # ビームと爆弾が衝突したら爆弾を消す
                     bombs[i] = None
-                    beam = None
+                    beams.remove(beam)
                     score.scores += 1  # スコアを1増やす
-            elif bird.rct.colliderect(bomb.rct):
-                # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                bird.change_img(8, screen)
-                fonto = pg.font.Font(None, 80)
-                txt = fonto.render("GAME OVER", True, (255, 0, 0))
-                screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
-                pg.display.update()
-                time.sleep(1)
-                return
+                elif bird.rct.colliderect(bomb.rct):
+                    # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
+                    bird.change_img(8, screen)
+                    fonto = pg.font.Font(None, 80)
+                    txt = fonto.render("GAME OVER", True, (255, 0, 0))
+                    screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+                    pg.display.update()
+                    time.sleep(1)
+                    return
         bombs = [bomb for bomb in bombs if bomb is not None]  # Noneを除去
         score.update(screen)  # スコアを更新
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        if beam is not None: # ビームが存在する場合のみビームを更新
+        for beam in beams: # ビームが存在する場合のみビームを更新
             beam.update(screen)
         for bomb in bombs: # 爆弾が存在する場合のみ爆弾を更新
             if bomb is not None:

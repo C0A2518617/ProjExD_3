@@ -151,6 +151,23 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Explosion:
+    """
+    爆発エフェクト。元gifと反転gitを交互に表示させる。
+    """
+    def __init__(self, bomb:"Bomb",life:int):
+        self.imgs = [pg.image.load(f"fig/explosion.gif"), pg.transform.flip(pg.image.load(f"fig/explosion.gif"), True, False)]
+        self.rct = self.imgs[0].get_rect()
+        self.rct.center = bomb.rct.center
+        self.life = 5
+
+    def update(self, screen: pg.Surface):
+        """
+        爆発エフェクトをlifeの値に基づき交互に表示させる
+        """
+        screen.blit(self.imgs[self.life % 2], self.rct)
+        self.life -= 1
+        
 
 
 def main():
@@ -160,6 +177,7 @@ def main():
     bird = Bird((300, 200))
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     beams = [] # ビームのリストを初期化
+    explosions = [] # 爆発エフェクトのリストを初期化
     score = Score((0, 0, 255), 0,None)
     clock = pg.time.Clock()
     tmr = 0
@@ -179,6 +197,8 @@ def main():
                     bombs[i] = None
                     beams.remove(beam)
                     score.scores += 1  # スコアを1増やす
+                    explosion = Explosion(bomb, 5)
+                    explosions.append(explosion)
                 elif bird.rct.colliderect(bomb.rct):
                     # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
                     bird.change_img(8, screen)
@@ -197,6 +217,10 @@ def main():
         for bomb in bombs: # 爆弾が存在する場合のみ爆弾を更新
             if bomb is not None:
                 bomb.update(screen)
+        for explosion in explosions: # 爆発エフェクトが存在する場合のみ更新
+            explosion.update(screen)
+            if explosion.life <= 0:
+                explosions.remove(explosion)
         if len(bombs) == 0:
             bird.change_img(9, screen)  # こうかとん画像を切り替える
             pg.display.update()

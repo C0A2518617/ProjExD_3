@@ -163,6 +163,10 @@ def main():
                     # ビームと爆弾が衝突したら爆弾を消す
                     bomb = None
                     beam = None
+                    bird.change_img(9, screen)  # こうかとん画像を切り替える
+                    pg.display.update()
+                    time.sleep(1)  # 1秒間表示させ
+                    return
             elif bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
                 bird.change_img(8, screen)

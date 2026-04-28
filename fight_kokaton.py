@@ -5,6 +5,7 @@ import time
 import pygame as pg
 import math
 
+
 WIDTH = 1100  # ゲームウィンドウの幅
 HEIGHT = 650  # ゲームウィンドウの高さ
 os.chdir(os.path.dirname(os.path.abspath(__file__)))

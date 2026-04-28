@@ -108,7 +108,19 @@ class Beam:
             self.rct.move_ip(self.vx, self.vy)
             screen.blit(self.img, self.rct)    
 
-
+class Score:
+    def __init__(self,color,scores,img):
+        self.fonto = pg.font.SysFont(None, 30)
+        self.color = (0,0,255)
+        self.scores = 0
+        self.img = self.fonto.render("表示させる文字列",0,self.color)
+        self.rct = self.img.get_rect()
+        self.rct.centerx = 100
+        self.rct.centery= HEIGHT - 50
+    def update(self,screen):
+        self.img = self.fonto.render(f"Score:{self.scores}",0,self.color)
+        screen.blit(self.img, self.rct)
+        
 class Bomb:
     """
     爆弾に関するクラス
@@ -140,6 +152,7 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -147,6 +160,7 @@ def main():
     bird = Bird((300, 200))
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     beam = None  # ゲーム初期化時にはビームは存在しない
+    score = Score((0, 0, 255), 0,None)
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -163,6 +177,7 @@ def main():
                     # ビームと爆弾が衝突したら爆弾を消す
                     bombs[i] = None
                     beam = None
+                    score.scores += 1  # スコアを1増やす
             elif bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
                 bird.change_img(8, screen)
@@ -173,6 +188,7 @@ def main():
                 time.sleep(1)
                 return
         bombs = [bomb for bomb in bombs if bomb is not None]  # Noneを除去
+        score.update(screen)  # スコアを更新
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         if beam is not None: # ビームが存在する場合のみビームを更新
